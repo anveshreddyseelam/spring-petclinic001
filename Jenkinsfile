@@ -81,7 +81,7 @@ pipeline {
                 sh "mvn package deploy"
             }
         }
-    }
+    
 }
 //         stage('Dev docker build') {
 //             when {
