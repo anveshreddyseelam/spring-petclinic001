@@ -44,45 +44,45 @@ pipeline {
                 waitForQualityGate abortPipeline: true
             }
         }
+        stage('Dev mvn clean') {
+            when {
+                branch 'development'
+            }
+            agent { label 'DEV' }
+            steps { 
+                sh "mvn clean"
+                // exit 1
+            }
+        }
+        stage('Dev mvn test') {
+            when {
+                branch 'development'
+            }
+            agent { label 'DEV' }
+            steps { 
+                sh "mvn test"
+            }
+        }
+        stage('Dev mvn package & install') {
+            when {
+                branch 'development'
+            }
+            agent { label 'DEV' }
+            steps { 
+                sh "mvn package install"
+            }
+        }
+        stage('Dev mvn package & deploy') {
+            when {
+                branch 'development'
+            }
+            agent { label 'DEV' }
+            steps { 
+                sh "mvn package deploy"
+            }
+        }
     }
 }
-//         stage('Dev mvn clean') {
-//             when {
-//                 branch 'development'
-//             }
-//             agent { label 'DEV' }
-//             steps { 
-//                 sh "mvn clean"
-//                 // exit 1
-//             }
-//         }
-//         stage('Dev mvn test') {
-//             when {
-//                 branch 'development'
-//             }
-//             agent { label 'DEV' }
-//             steps { 
-//                 sh "mvn test"
-//             }
-//         }
-//         stage('Dev mvn package & install') {
-//             when {
-//                 branch 'development'
-//             }
-//             agent { label 'DEV' }
-//             steps { 
-//                 sh "mvn package install"
-//             }
-//         }
-//         stage('Dev mvn package & deploy') {
-//             when {
-//                 branch 'development'
-//             }
-//             agent { label 'DEV' }
-//             steps { 
-//                 sh "mvn package deploy"
-//             }
-//         }
 //         stage('Dev docker build') {
 //             when {
 //                 branch 'development'
