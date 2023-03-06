@@ -81,39 +81,39 @@ pipeline {
                 sh "mvn package deploy"
             }
         }
+        stage('Dev docker build') {
+            when {
+                branch 'development'
+            }
+            agent { label 'DEV' }
+            steps { 
+                sh "sudo docker build -t sreeharshav/devopsb30spring:$BUILD_NUMBER ."
+            }
+        }
+        stage('Dev Deploy Docker Image') {
+            when {
+                branch 'development'
+            }
+            agent { label 'DEV' }
+            steps { 
+                sh "sudo docker stop springbootapp || sudo docker ps"
+                sh "sudo docker run --rm -dit --name springbootapp -p 8080:8080 sreeharshav/devopsb30spring:$BUILD_NUMBER"
+            }
+        }
+        stage('Dev Validate Deployment') {
+            when {
+                branch 'development'
+            }
+            options {
+               timeout(time: 3, unit: 'MINUTES') 
+            }
+            agent { label 'DEV' }
+            steps { 
+                sh "sleep 30 && curl ec2-3-93-20-152.compute-1.amazonaws.com:8080 || exit 1"
+            }
+        }
     }
-}
-//         stage('Dev docker build') {
-//             when {
-//                 branch 'development'
-//             }
-//             agent { label 'DEV' }
-//             steps { 
-//                 sh "sudo docker build -t sreeharshav/devopsb30spring:$BUILD_NUMBER ."
-//             }
-//         }
-//         stage('Dev Deploy Docker Image') {
-//             when {
-//                 branch 'development'
-//             }
-//             agent { label 'DEV' }
-//             steps { 
-//                 sh "sudo docker stop springbootapp || sudo docker ps"
-//                 sh "sudo docker run --rm -dit --name springbootapp -p 8080:8080 sreeharshav/devopsb30spring:$BUILD_NUMBER"
-//             }
-//         }
-//         stage('Dev Validate Deployment') {
-//             when {
-//                 branch 'development'
-//             }
-//             options {
-//                timeout(time: 3, unit: 'MINUTES') 
-//             }
-//             agent { label 'DEV' }
-//             steps { 
-//                 sh "sleep 30 && curl http://ec2-44-201-17-98.compute-1.amazonaws.com:8080 || exit 1"
-//             }
-//         }
+}    
 //         stage ('Dev DAST') {
 //             when {
 //                 branch 'development'
@@ -123,7 +123,7 @@ pipeline {
 //           }
 //           agent { label 'DEV' }  
 //           steps {
-//              sh 'sudo docker run -t owasp/zap2docker-stable zap-baseline.py -t http://ec2-44-201-17-98.compute-1.amazonaws.com:8080 || true'
+//              sh 'sudo docker run -t owasp/zap2docker-stable zap-baseline.py -t ec2-3-93-20-152.compute-1.amazonaws.com:8080 || true'
 //             }
 //         }
 // //-----------------------------PRODUCTION---------------
