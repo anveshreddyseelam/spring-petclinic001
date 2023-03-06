@@ -111,21 +111,22 @@ pipeline {
             steps { 
                 sh "sleep 30 && curl ec2-3-93-20-152.compute-1.amazonaws.com:8080 || exit 1"
             }
+        }   
+        stage ('Dev DAST') {
+            when {
+                branch 'development'
+            }
+          options {
+            timeout(time: 5, unit: 'MINUTES') 
+          }
+          agent { label 'DEV' }  
+          steps {
+             sh 'sudo docker run -t owasp/zap2docker-stable zap-baseline.py -t ec2-3-93-20-152.compute-1.amazonaws.com:8080 || true'
+            }
         }
     }
-}    
-//         stage ('Dev DAST') {
-//             when {
-//                 branch 'development'
-//             }
-//           options {
-//             timeout(time: 5, unit: 'MINUTES') 
-//           }
-//           agent { label 'DEV' }  
-//           steps {
-//              sh 'sudo docker run -t owasp/zap2docker-stable zap-baseline.py -t ec2-3-93-20-152.compute-1.amazonaws.com:8080 || true'
-//             }
-//         }
+}
+     
 // //-----------------------------PRODUCTION---------------
 //         stage("PROD Tools Verification") {
 //             when {
