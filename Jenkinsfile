@@ -141,7 +141,7 @@ pipeline {
             }
             agent { label 'PROD' }
             steps { 
-                withSonarQubeEnv('DevOpsB29-SonarQube-PROD'){
+                withSonarQubeEnv('DevOpsB29-SonarQube-prod'){
                      sh "mvn clean verify sonar:sonar \
                      -Dsonar.projectKey=spring-boot-app-prod \
                      -Dsonar.projectName=spring-boot-app-prod \
