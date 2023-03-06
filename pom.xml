@@ -28,7 +28,19 @@
     <spring-format.version>0.0.31</spring-format.version>
 
   </properties>
+    <distributionManagement>
+    <repository>
+      <id>central</id>
+      <name>libs-release</name>
+      <url>http://ec2-54-208-117-77.compute-1.amazonaws.com:8081/artifactory/libs-release-local/</url>
+    </repository>
 
+    <snapshotRepository>
+      <id>snapshots</id>
+      <name>libs-snapshot</name>
+      <url>http://ec2-54-208-117-77.compute-1.amazonaws.com:8081/artifactory/libs-snapshot-local/</url>
+    </snapshotRepository>
+  </distributionManagement> 
   <dependencies>
     <!-- Spring and Spring Boot dependencies -->
     <dependency>
