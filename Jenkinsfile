@@ -124,124 +124,122 @@ pipeline {
              sh 'sudo docker run -t owasp/zap2docker-stable zap-baseline.py -t ec2-3-93-20-152.compute-1.amazonaws.com:8080 || true'
             }
         }
+     // //-----------------------------PRODUCTION---------------
+        stage("PROD Tools Verification") {
+            when {
+                branch 'production'
+            }
+            agent { label 'PROD' }
+            steps {
+                sh "mvn --version"
+                sh "java -version"
+            }
+        }
+        stage('PROD Sonarqube SAST') {
+            when {
+                branch 'production'
+            }
+            agent { label 'PROD' }
+            steps { 
+                withSonarQubeEnv('DevOpsB29-SonarQube-PROD'){
+                     sh "mvn clean verify sonar:sonar \
+                     -Dsonar.projectKey=spring-boot-app-prod \
+                     -Dsonar.projectName=spring-boot-app-prod \
+                     -Dsonar.host.url=http://ec2-54-208-117-77.compute-1.amazonaws.com:9000"
+                }
+
+            }
+        }
+        stage("PROD Quality gate") {
+            when {
+                branch 'production'
+            }
+            steps {
+                waitForQualityGate abortPipeline: true
+            }
+        }
+        stage('PROD mvn clean') {
+            when {
+                branch 'production'
+            }
+            agent { label 'PROD' }
+            steps { 
+                sh "mvn clean"
+                // exit 1
+            }
+        }
+        stage('PROD mvn test') {
+            when {
+                branch 'production'
+            }
+            agent { label 'PROD' }
+            steps { 
+                sh "mvn test"
+            }
+        }
+        stage('PROD mvn package & install') {
+            when {
+                branch 'production'
+            }
+            agent { label 'PROD' }
+            steps { 
+                sh "mvn package install"
+            }
+        }
+        stage('PROD mvn package & deploy') {
+            when {
+                branch 'production'
+            }
+            agent { label 'PROD' }
+            steps { 
+                sh "mvn package deploy"
+            }
+        }
+        stage('PROD docker build') {
+            when {
+                branch 'production'
+            }
+            agent { label 'PROD' }
+            steps { 
+                sh "sudo docker build -t sreeharshav/devopsopsb30springprod:$BUILD_NUMBER ."
+            }
+        }
+        stage('PROD Deploy Docker Image') {
+            when {
+                branch 'production'
+            }
+            agent { label 'PROD' }
+            steps { 
+                sh "sudo docker stop springbootapp || sudo docker ps"
+                sh "sudo docker run --rm -dit --name springbootapp -p 8080:8080 sreeharshav/devopsopsb30springprod:$BUILD_NUMBER"
+            }
+        }
+        stage('PROD Validate Deployment') {
+            when {
+                branch 'production'
+            }
+            options {
+               timeout(time: 3, unit: 'MINUTES') 
+            }
+            agent { label 'PROD' }
+            steps { 
+                sh "sleep 30 && curl http://ec2-54-157-44-44.compute-1.amazonaws.com:8080 || exit 1"
+            }
+        }
+        stage ('PROD DAST') {
+            when {
+                branch 'production'
+            }
+          options {
+            timeout(time: 5, unit: 'MINUTES') 
+          }
+          agent { label 'PROD' }  
+          steps {
+             sh 'sudo docker run -t owasp/zap2docker-stable zap-baseline.py -t http://ec2-54-157-44-44.compute-1.amazonaws.com:8080 || true'
+            }
+        }
     }
 }
-     
-// //-----------------------------PRODUCTION---------------
-//         stage("PROD Tools Verification") {
-//             when {
-//                 branch 'production'
-//             }
-//             agent { label 'PROD' }
-//             steps {
-//                 sh "mvn --version"
-//                 sh "java -version"
-//             }
-//         }
-//         stage('PROD Sonarqube SAST') {
-//             when {
-//                 branch 'production'
-//             }
-//             agent { label 'PROD' }
-//             steps { 
-//                 withSonarQubeEnv('DevOpsB29-SonarQube-PROD'){
-//                      sh "mvn clean verify sonar:sonar \
-//                      -Dsonar.projectKey=spring-boot-app-prod \
-//                      -Dsonar.projectName=spring-boot-app-prod \
-//                      -Dsonar.host.url=http://ec2-3-235-9-52.compute-1.amazonaws.com:9000"
-//                 }
-
-//             }
-//         }
-//         stage("PROD Quality gate") {
-//             when {
-//                 branch 'production'
-//             }
-//             steps {
-//                 waitForQualityGate abortPipeline: true
-//             }
-//         }
-//         stage('PROD mvn clean') {
-//             when {
-//                 branch 'production'
-//             }
-//             agent { label 'PROD' }
-//             steps { 
-//                 sh "mvn clean"
-//                 // exit 1
-//             }
-//         }
-//         stage('PROD mvn test') {
-//             when {
-//                 branch 'production'
-//             }
-//             agent { label 'PROD' }
-//             steps { 
-//                 sh "mvn test"
-//             }
-//         }
-//         stage('PROD mvn package & install') {
-//             when {
-//                 branch 'production'
-//             }
-//             agent { label 'PROD' }
-//             steps { 
-//                 sh "mvn package install"
-//             }
-//         }
-//         stage('PROD mvn package & deploy') {
-//             when {
-//                 branch 'production'
-//             }
-//             agent { label 'PROD' }
-//             steps { 
-//                 sh "mvn package deploy"
-//             }
-//         }
-//         stage('PROD docker build') {
-//             when {
-//                 branch 'production'
-//             }
-//             agent { label 'PROD' }
-//             steps { 
-//                 sh "sudo docker build -t sreeharshav/devopsopsb30springprod:$BUILD_NUMBER ."
-//             }
-//         }
-//         stage('PROD Deploy Docker Image') {
-//             when {
-//                 branch 'production'
-//             }
-//             agent { label 'PROD' }
-//             steps { 
-//                 sh "sudo docker stop springbootapp || sudo docker ps"
-//                 sh "sudo docker run --rm -dit --name springbootapp -p 8080:8080 sreeharshav/devopsopsb30springprod:$BUILD_NUMBER"
-//             }
-//         }
-//         stage('PROD Validate Deployment') {
-//             when {
-//                 branch 'production'
-//             }
-//             options {
-//                timeout(time: 3, unit: 'MINUTES') 
-//             }
-//             agent { label 'PROD' }
-//             steps { 
-//                 sh "sleep 30 && curl http://ec2-3-237-252-234.compute-1.amazonaws.com:8080 || exit 1"
-//             }
-//         }
-//         stage ('PROD DAST') {
-//             when {
-//                 branch 'production'
-//             }
-//           options {
-//             timeout(time: 5, unit: 'MINUTES') 
-//           }
-//           agent { label 'PROD' }  
-//           steps {
-//              sh 'sudo docker run -t owasp/zap2docker-stable zap-baseline.py -t http://ec2-3-237-252-234.compute-1.amazonaws.com:8080 || true'
-//             }
-//         }
-//     }
 //     post {
 //     success {
 //         slackSend(color: 'good', message: "Pipeline Successfull: ${env.JOB_NAME} ${env.BUILD_NUMBER} ${env.BUILD_URL}") 
